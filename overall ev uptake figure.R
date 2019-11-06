@@ -47,12 +47,31 @@ cars<-cars%>%mutate(all_cars=round(all_cars,1),ulev=round(ulev,1))%>%
   mutate(market_share=round(100*ulev/all_cars,1))
 
 
-
+labels<-c(ulev="ULEV",all_cars="All Cars",market_share="Market Share %")
 p<-cars%>%pivot_longer(cols=c(all_cars,ulev,market_share))%>%
   filter(name!="market_share")%>%
-  ggplot(aes(x=year,y=value,group=name))+geom_point()+geom_line()
+  ggplot(aes(x=year,y=value))+geom_point(size=3)+geom_line()+
+  facet_grid(rows=vars(name),scales="free_y",
+             labeller = labeller(name=labels))+
+  labs(y="New Vehicle Registrations (1000s)",
+       x="Year")+
+  theme(strip.text.y = element_text(size=14, face="bold"),
+        axis.title = element_text(size=12,face="bold"))+
+  scale_x_continuous(breaks=2010:2019)
+     
+plot(p)
 
 
+p<-cars%>%pivot_longer(cols=c(all_cars,ulev,market_share))%>%
+  filter(name=="market_share")%>%
+  ggplot(aes(x=year,y=value))+geom_point(size=3)+geom_line()+
+  labs(y="Market Share (%)",
+       x="Year")+
+  theme(strip.text.y = element_text(size=14, face="bold"),
+        axis.title = element_text(size=12,face="bold"))+
+  scale_x_continuous(breaks=2010:2019)
+
+plot(p)
 
 
 
