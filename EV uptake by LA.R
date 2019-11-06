@@ -25,7 +25,7 @@ uptake<-uptake%>%filter(substr(code,1,2)=="E0")%>%
 
 
 uptake<-uptake%>%left_join(pay_by_la,by="code")%>%
-  left_join(pop,by="code")
+  left_join(pop,by="code")%>%mutate(ev_ration=uptake/pop)
 
 
 
