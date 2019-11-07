@@ -35,21 +35,26 @@ uptake<-uptake%>%filter(substr(code,1,2)=="E0")%>%
 
 
 uptake<-uptake%>%left_join(pay_by_la,by="code")%>%
-  left_join(pop,by="code")%>%mutate(ev_ration=uptake/pop)
+  left_join(pop,by="code")%>%mutate(ev_ratio=uptake/pop)
 
 
 zones@data<-zones@data%>%left_join(uptake,by=c("lad17cd"="code"))
 
-pal<-colorNumeric("viridis",domain=range(zones@data$ev_ration,na.rm=T),n=10)
 
-plot(zones,col=pal(zones@data$ev_ration),border=pal(zones@data$ev_ration))
+pal<-colorNumeric("viridis",domain=c(-0.5,2))
 
 s<-which(!is.na(zones@data$ev_ration))
 l<-leaflet(zones[s,]) %>% #setView(lng = -3, lat = 54.6, zoom = 9) %>%
   addTiles()%>%
-  addPolygons(layerId=~ zones@data$code,weight=0.5,fillOpacity = 0.8,fillColor = ~pal((log(zones@data$ev_ration[s]))))%>%
-  addLegend(pal = pal, bins=5,
-            values = log(zones@data$ev_ration[s]),
-            opacity = 1,title="EVs per Capita",
-            labels=c(1,10,100))
+  addPolygons(layerId=~ zones@data$code,weight=0.5,fillOpacity = 0.9,fillColor = ~pal(log10(zones@data$ev_ration[s])))%>%
+  addLegend(colors=pal(seq(-0.5,2,by=0.25)),
+            opacity = 1,title="EVs per 1000 People",
+            labels=c("","",1,"","","",10,"","","",100))
+
+
+
+
+
+
+
 
