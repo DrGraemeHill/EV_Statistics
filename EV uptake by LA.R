@@ -7,6 +7,12 @@ library(rgdal)
 library(raster)
 library(leaflet)
 library(dplyr)
+library(tidyr)
+
+#set up the coordinate system
+ukgrid = "+init=epsg:27700"
+latlong = "+init=epsg:4326"
+
 #load the LA
 
 zones<-readOGR(dsn="P:\\WCTM\\4.Demand\\Zoning System\\Full UK Zones\\LAD\\Local_Authority_Districts_December_2017_Generalised_Clipped_Boundaries_in_United_Kingdom_WGS84.shp")
@@ -48,8 +54,26 @@ l<-leaflet(zones[s,]) %>% #setView(lng = -3, lat = 54.6, zoom = 9) %>%
   addTiles()%>%
   addPolygons(layerId=~ zones@data$code,weight=0.5,fillOpacity = 0.9,fillColor = ~pal(log10(zones@data$ev_ration[s])))%>%
   addLegend(colors=pal(seq(-0.5,2,by=0.25)),
-            opacity = 1,title="EVs per 1000 People",
+            opacity = 1,title=c("New EV Registrations </br> per 1000 People"),
             labels=c("","",1,"","","",10,"","","",100))
+
+
+#load the ncpr
+ncpr<-read.csv("national-charge-point-registry.csv",header=T,
+               stringsAsFactors = F)
+
+#reduce it to lat,long and total power per charger
+ncpr<-ncpr%>%mutate(total_power=rowSums(select(.,ends_with("RatedOutputKW")),na.rm = T))%>%
+  select(latitude,longitude,total_power)%>%filter(!is.na(latitude) & !is.na(longitude) & latitude>0)
+
+#create the spatial points dataframe in the correct projection
+charge_points<-SpatialPointsDataFrame(cbind(ncpr$longitude,ncpr$latitude),data=ncpr,
+                                      proj4string = CRS(latlong))
+
+zones<-spTransform(zones,CRS(latlong))
+
+
+
 
 
 
